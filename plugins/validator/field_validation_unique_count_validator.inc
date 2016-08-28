@@ -71,31 +71,38 @@ class field_validation_unique_count_validator extends field_validation_validator
 
       // Do the check per user
       if (isset($this->rule->settings['per_user']) && $this->rule->settings['per_user'] && $scope != 'global') {
-        global $user;
-        $query->propertyCondition('uid', $user->uid);
-				
+        //global $user;
+        //$query->propertyCondition('uid', $user->uid);
+
 				$onePerUser = true;
       }
 
       // Store a copy of our matched entities for our use in tokens later.
       $matched_entities = $query->execute();
-			
+
       $count = $query
         ->count()
         ->execute();
-			
-			if ($count && $onePerUser) {
-				// $nids = array_keys($matched_entities['node']);
-				// $nodes = entity_load('node', $nids);
-				// dsm($news_items);
-				
-				$flag = FALSE;
-				form_set_error('field_date', 'You have a session belongs to you on same time already, please pick other date/time.');
-				return;
-			}elseif($count && !$onePerUser){
+
+			if($count){
+
+				if($onePerUser){
+
+					$nids = array_keys($matched_entities['node']);
+					$nodes = entity_load('node', $nids);
+					global $user;
+
+					foreach($nodes as $eachnode){
+						if($eachnode->uid == $user->uid && ){
+							$flag = false;
+							form_set_error('field_date', 'You have a session belongs to you on same time already, please pick other date/time.');
+							return;
+						}
+					}
+				}
 				$maxcount = $this->rule->settings['maxcount'];
 				if($count >= $maxcount) $flag = FALSE;
-      }
+			}
     }
 
     if (!$flag) {
@@ -162,7 +169,7 @@ class field_validation_unique_count_validator extends field_validation_validator
       ),
     );
 		$form['settings']['maxcount'] = array(
-			'#type' => 'textfield',     
+			'#type' => 'textfield',
 			'#title' => t('Max number'),
 			'#description' => t('Type maximum number of same value allowed'),
 			'#default_value' => isset($default_settings['maxcount']) ? $default_settings['maxcount'] : 2,
