@@ -93,7 +93,7 @@ class field_validation_unique_count_validator extends field_validation_validator
 					global $user;
 
 					foreach($nodes as $eachnode){
-						if($eachnode->uid == $user->uid && ){
+						if($eachnode->uid == $user->uid){
 							$flag = false;
 							form_set_error('field_date', 'You have a session belongs to you on same time already, please pick other date/time.');
 							return;
